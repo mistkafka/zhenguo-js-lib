@@ -1,0 +1,16 @@
+{
+  "name": "zhenguo-js-lib",
+  "version": "1.0.0",
+  "description": "personal js lib",
+  "main": "index.js",
+  "repository": "https://github.com/mistkafka/zhenguo-js-lib",
+  "author": "zhenguo",
+    "license": "MIT",
+    "dependencies": {
+        "csv-parse": "^4.6.3",
+        "json2xls": "^0.1.2",
+        "moment": "^2.24.0",
+        "ramda": "^0.26.1",
+        "shelljs": "^0.8.3"
+    }
+}
