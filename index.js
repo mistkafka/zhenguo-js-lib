@@ -126,6 +126,52 @@ function execP(cmd, options = {}) {
   });
 }
 
+function moveImageToAndroidProject(imageDir, androidResDir) {
+  imageDir = resolveHome(imageDir);
+  androidResDir = resolveHome(androidResDir);
+
+  const sizes = [1, 2, 3];
+  const size2FileSuffix = {
+    1: ".png",
+    2: "@2x.png",
+    3: "@3x.png",
+  };
+  const size2SizeDirSuffix = {
+    1: "mdpi",
+    2: "xhdpi",
+    3: "xxhdpi",
+  };
+
+  const reg = /(\w+)@[23]x\.png/i;
+  const files = ls(imageDir);
+  const pickTargetPng = R.filter(fileName => fileName.match(reg));
+  const getImageName = R.map(fileName => fileName.match(reg)[1]);
+  const doMoveOperator = R.forEach(imageName => {
+    sizes.forEach(size => {
+      const fileSuffix = size2FileSuffix[size];
+      const fileName = `${imageName}${fileSuffix}`;
+      const sourcePath = path.join(imageDir, fileName);
+
+      const sizeDir = "drawable-" + size2SizeDirSuffix[size];
+      const targetPath = path.join(androidResDir, sizeDir, imageName + '.png');
+
+      const result = shelljs.mv(sourcePath, targetPath);
+      if (result.stderr) {
+        console.log(`'${sourcePath}' -> ${targetPath}, failed`);
+      } else {
+        console.log(`'${sourcePath}' -> ${targetPath}, success`);
+      }
+    });
+  });
+
+  R.pipe(
+    pickTargetPng,
+    getImageName,
+    R.uniq,
+    doMoveOperator
+  )(files);
+}
+
 
 module.exports = {
   resolveHome,
@@ -141,5 +187,6 @@ module.exports = {
   R,
   moment,
   convertDatas2Csv,
-  json2xls
-}
+  json2xls,
+  moveImageToAndroidProject,
+};
