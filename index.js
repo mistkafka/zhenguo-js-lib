@@ -6,6 +6,11 @@ const moment = require('moment');
 const csvParse = require('csv-parse/lib/sync');
 const R = require('ramda')
 const json2xls = require('json2xls');
+const tinify = require('tinify');
+const prettyBytes = require('pretty-bytes');
+
+tinify.key = process.env.TINIFY_KEY;
+
 
 function resolveHome(filepath) {
     if (filepath[0] === '~') {
@@ -172,6 +177,29 @@ function moveImageToAndroidProject(imageDir, androidResDir) {
   )(files);
 }
 
+async function tinifyFileSync(filePath, savePath, muteConsole = false) {
+  await tinifyFileP(filePath, savePath, muteConsole);
+}
+
+function tinifyFileP(filePath, savePath, muteConsole = false) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(filePath, (err, sourceData) => {
+      if (err) throw err;
+      tinify.fromBuffer(sourceData).toBuffer((err, resultData) => {
+        if (err) throw err;
+
+        fs.writeFileSync(savePath, resultData, 'binary');
+        if (!muteConsole) {
+          const originSize = prettyBytes(sourceData.length);
+          const optedSize = prettyBytes(resultData.length);
+          console.log(`tinify file: ${filePath}, from ${originSize} to ${optedSize}, and save to ${savePath}`);
+        }
+        resolve();
+      })
+    });
+  });
+}
+
 
 module.exports = {
   resolveHome,
@@ -189,4 +217,7 @@ module.exports = {
   convertDatas2Csv,
   json2xls,
   moveImageToAndroidProject,
+  tinifyFileSync,
+  tinifyFileP,
+  shelljs
 };
