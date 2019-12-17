@@ -131,7 +131,7 @@ function execP(cmd, options = {}) {
   });
 }
 
-function moveImageToAndroidProject(imageDir, androidResDir) {
+function cpImageToAndroidProject(imageDir, androidResDir) {
   imageDir = resolveHome(imageDir);
   androidResDir = resolveHome(androidResDir);
 
@@ -147,11 +147,11 @@ function moveImageToAndroidProject(imageDir, androidResDir) {
     3: "xxhdpi",
   };
 
-  const reg = /(\w+)@[23]x\.png/i;
+  const reg = /([\w\-]+)@[23]x\.png/i;
   const files = ls(imageDir);
   const pickTargetPng = R.filter(fileName => fileName.match(reg));
   const getImageName = R.map(fileName => fileName.match(reg)[1]);
-  const doMoveOperator = R.forEach(imageName => {
+  const doCpOperator = R.forEach(imageName => {
     sizes.forEach(size => {
       const fileSuffix = size2FileSuffix[size];
       const fileName = `${imageName}${fileSuffix}`;
@@ -160,7 +160,7 @@ function moveImageToAndroidProject(imageDir, androidResDir) {
       const sizeDir = "drawable-" + size2SizeDirSuffix[size];
       const targetPath = path.join(androidResDir, sizeDir, imageName + '.png');
 
-      const result = shelljs.mv(sourcePath, targetPath);
+      const result = shelljs.cp(sourcePath, targetPath);
       if (result.stderr) {
         console.log(`'${sourcePath}' -> ${targetPath}, failed`);
       } else {
@@ -173,15 +173,29 @@ function moveImageToAndroidProject(imageDir, androidResDir) {
     pickTargetPng,
     getImageName,
     R.uniq,
-    doMoveOperator
+    doCpOperator
   )(files);
+}
+
+function tinifyImagesInDirP(dir, muteConsole=false) {
+  const files = ls(dir);
+  const pngs = files.filter(x => x.endsWith('.png'));
+  const promises = pngs.map(imageName => {
+    const filePath = path.join(dir, imageName);
+    return tinifyFileP(filePath, filePath, muteConsole);
+  });
+
+  return Promise.all(promises);
 }
 
 async function tinifyFileSync(filePath, savePath, muteConsole = false) {
   await tinifyFileP(filePath, savePath, muteConsole);
 }
 
-function tinifyFileP(filePath, savePath, muteConsole = false) {
+function tinifyFileP(filePath, savePath = null, muteConsole = false) {
+  if (!savePath) {
+    savePath = filePath
+  }
   return new Promise((resolve, reject) => {
     fs.readFile(filePath, (err, sourceData) => {
       if (err) throw err;
@@ -200,6 +214,13 @@ function tinifyFileP(filePath, savePath, muteConsole = false) {
   });
 }
 
+function getGitBranchCurrent() {
+  const branchs = simpleExec('git branch').split('\n');
+  const currentBranch = branchs.filter(x => x.startsWith('* '))[0];
+
+  return currentBranch.substring(2);
+}
+
 
 module.exports = {
   resolveHome,
@@ -216,8 +237,10 @@ module.exports = {
   moment,
   convertDatas2Csv,
   json2xls,
-  moveImageToAndroidProject,
+  cpImageToAndroidProject,
   tinifyFileSync,
   tinifyFileP,
-  shelljs
+  shelljs,
+  getGitBranchCurrent,
+  tinifyImagesInDirP,
 };
