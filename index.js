@@ -8,6 +8,7 @@ const R = require('ramda')
 const json2xls = require('json2xls');
 const tinify = require('tinify');
 const prettyBytes = require('pretty-bytes');
+const uuidv4 = require('uuid/v4');
 
 tinify.key = process.env.TINIFY_KEY;
 
@@ -179,7 +180,7 @@ function cpImageToAndroidProject(imageDir, androidResDir) {
 
 function tinifyImagesInDirP(dir, muteConsole=false) {
   const files = ls(dir);
-  const pngs = files.filter(x => x.endsWith('.png'));
+  const pngs = files.filter(x => x.endsWith('.png') || x.endsWith('.jpg'));
   const promises = pngs.map(imageName => {
     const filePath = path.join(dir, imageName);
     return tinifyFileP(filePath, filePath, muteConsole);
@@ -221,6 +222,26 @@ function getGitBranchCurrent() {
   return currentBranch.substring(2);
 }
 
+function copyToClipboard(content) {
+  const TMP_DIR = '/tmp/clipboard'
+  if (!fs.existsSync(TMP_DIR)) {
+    shelljs.mkdir(TMP_DIR);
+  }
+  const tmpFileName = uuidv4() + '.txt';
+  const tmpFilePath = path.join(TMP_DIR, tmpFileName)
+  writeContentToFile(tmpFilePath, content, {encoding: 'utf-8'});
+  simpleExec(`cat ${tmpFilePath} | pbcopy`);
+  shelljs.rm(tmpFilePath)
+}
+
+function copyObjToClipboard(obj, indent=4) {
+  const content = JSON.stringify(obj, null, indent);
+  copyToClipboard(content);
+}
+
+function camelCaseToSnakeCase(camelStr) {
+  return camelStr[0] + camelStr.substring(1).replace(/[A-Z]/g, x => '_' + x);
+}
 
 module.exports = {
   resolveHome,
@@ -243,4 +264,7 @@ module.exports = {
   shelljs,
   getGitBranchCurrent,
   tinifyImagesInDirP,
+  copyToClipboard,
+  copyObjToClipboard,
+  camelCaseToSnakeCase,
 };
