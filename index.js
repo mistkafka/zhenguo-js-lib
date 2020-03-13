@@ -9,6 +9,7 @@ const json2xls = require('json2xls');
 const tinify = require('tinify');
 const prettyBytes = require('pretty-bytes');
 const uuidv4 = require('uuid/v4');
+const { parse: parseHtml } = require('node-html-parser');
 
 tinify.key = process.env.TINIFY_KEY;
 
@@ -240,8 +241,15 @@ function copyObjToClipboard(obj, indent=4) {
 }
 
 function camelCaseToSnakeCase(camelStr) {
-  return camelStr[0] + camelStr.substring(1).replace(/[A-Z]/g, x => '_' + x);
+  return camelStr[0] + camelStr.substring(1).replace(/[A-Z]/g, x => '_' + x.toLowerCase());
 }
+
+function snakeCaseToCamelCase(snakeCase) {
+  snakeCase = snakeCase.toLowerCase();
+  const parts = snakeCase.split('_');
+  return parts.map(x => x[0].toUpperCase() + x.substring(1)).join('');
+}
+
 
 module.exports = {
   resolveHome,
@@ -267,4 +275,6 @@ module.exports = {
   copyToClipboard,
   copyObjToClipboard,
   camelCaseToSnakeCase,
+  parseHtml,
+  snakeCaseToCamelCase,
 };
