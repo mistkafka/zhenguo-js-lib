@@ -4,7 +4,7 @@ const shelljs = require('shelljs');
 const child_process = require('child_process');
 const moment = require('moment');
 const csvParse = require('csv-parse/lib/sync');
-const R = require('ramda')
+const R = require('ramda');
 const json2xls = require('json2xls');
 const tinify = require('tinify');
 const prettyBytes = require('pretty-bytes');
@@ -223,16 +223,29 @@ function getGitBranchCurrent() {
   return currentBranch.substring(2);
 }
 
-function copyToClipboard(content) {
-  const TMP_DIR = '/tmp/clipboard'
-  if (!fs.existsSync(TMP_DIR)) {
-    shelljs.mkdir(TMP_DIR);
+function withTmpFilePath(actionFn) {
+  const TMP_DIR = '/tmp/';
+  const tmpFileName = 'zhenguo-js-lib-tmp' + uuidv4() + '.txt';
+  const tmpFilePath = path.join(TMP_DIR, tmpFileName);
+
+  const result = actionFn(tmpFilePath);
+
+  if (result instanceof Promise) {
+    result.finally(() => {
+      shelljs.rm(tmpFilePath);
+    })
+  } else {
+    shelljs.rm(tmpFilePath);
   }
-  const tmpFileName = uuidv4() + '.txt';
-  const tmpFilePath = path.join(TMP_DIR, tmpFileName)
-  writeContentToFile(tmpFilePath, content, {encoding: 'utf-8'});
-  simpleExec(`cat ${tmpFilePath} | pbcopy`);
-  shelljs.rm(tmpFilePath)
+
+  return result;
+}
+
+/**
+ * alias to clipboardWriteText
+ */
+function copyToClipboard(content) {
+  clipboardWriteText(content)
 }
 
 function copyObjToClipboard(obj, indent=4) {
@@ -250,31 +263,72 @@ function snakeCaseToCamelCase(snakeCase) {
   return parts.map(x => x[0].toUpperCase() + x.substring(1)).join('');
 }
 
+function clipboardWriteText(text) {
+  withTmpFilePath((tmpFilePath) => {
+    writeContentToFile(tmpFilePath, text, {encoding: 'utf-8'});
+    simpleExec(`pbcopy < ${tmpFilePath}`);
+  })
+}
+
+function clipboardReadText() {
+  return simpleExec('pbpaste');
+}
+
+function simpleExecAppleScript(appleScript) {
+  return withTmpFilePath((tmpFilePath) => {
+    writeContentToFile(tmpFilePath, appleScript, { encoding: 'utf8' });
+    return simpleExec(`osascript ${tmpFilePath}`);
+  });
+}
+
+function osxNotification(title, content, subtitle='', sound=false) {
+  const parts = [
+    `display notification "${content}"`,
+    `with title "${title}"`,
+  ];
+  if (subtitle) {
+    parts.push(`subtitle "${subtitle}"`);
+  }
+  if (sound) {
+    parts.push('sound name "Submarine"');
+  }
+
+  const script = parts.join(' ');
+  simpleExecAppleScript(script);
+}
+
 
 module.exports = {
+  simpleExec,
+  execP,
   resolveHome,
   loadJson,
   readFileContent,
   writeContentToFile,
   loadCsvAsJson,
+  withTmpFilePath,
+  tinifyFileSync,
+  tinifyFileP,
+  convertDatas2Csv,
+  getGitBranchCurrent,
+  copyToClipboard,
+  copyObjToClipboard,
+  clipboardWriteText,
+  clipboardReadText,
+
   renameFile,
   renameFileByReplace,
   ls,
-  simpleExec,
-  execP,
+
   R,
   moment,
-  convertDatas2Csv,
   json2xls,
   cpImageToAndroidProject,
-  tinifyFileSync,
-  tinifyFileP,
   shelljs,
-  getGitBranchCurrent,
   tinifyImagesInDirP,
-  copyToClipboard,
-  copyObjToClipboard,
   camelCaseToSnakeCase,
   parseHtml,
   snakeCaseToCamelCase,
+  simpleExecAppleScript,
+  osxNotification,
 };
