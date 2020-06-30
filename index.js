@@ -216,8 +216,12 @@ function tinifyFileP(filePath, savePath = null, muteConsole = false) {
   });
 }
 
-function getGitBranchCurrent() {
-  const branchs = simpleExec('git branch').split('\n');
+function getGitBranchCurrent(pwd='') {
+  let cmd = 'git branch';
+  if (pwd) {
+    cmd = `cd ${pwd} && ${cmd}`
+  }
+  const branchs = simpleExec(cmd).split('\n');
   const currentBranch = branchs.filter(x => x.startsWith('* '))[0];
 
   return currentBranch.substring(2);
