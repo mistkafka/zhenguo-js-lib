@@ -227,6 +227,14 @@ function getGitBranchCurrent(pwd='') {
   return currentBranch.substring(2);
 }
 
+function getGitTags(pwd='', count=20) {
+  let cmd = `git describe --tags \`git rev-list --tags --max-count=${count}\``;
+  if (pwd) {
+    cmd = `cd ${pwd} && ${cmd}`
+  }
+  return simpleExec(cmd).split('\n').map(x => x.trim()).filter(x => x);
+}
+
 function withTmpFilePath(actionFn) {
   const TMP_DIR = '/tmp/';
   const tmpFileName = 'zhenguo-js-lib-tmp' + uuidv4() + '.txt';
@@ -315,6 +323,7 @@ module.exports = {
   tinifyFileP,
   convertDatas2Csv,
   getGitBranchCurrent,
+  getGitTags,
   copyToClipboard,
   copyObjToClipboard,
   clipboardWriteText,
