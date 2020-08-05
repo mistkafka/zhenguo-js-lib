@@ -133,6 +133,24 @@ function execP(cmd, options = {}) {
   });
 }
 
+function readStdin() {
+  return new Promise((resolve, reject) => {
+    let stdinStr = '';
+    process.stdin.setEncoding('utf-8');
+    process.stdin.on('readable', () => {
+      stdinStr += process.stdin.read();
+    });
+
+    process.stdin.on('end', () => {
+      resolve(stdinStr);
+    });
+  });
+}
+
+function parseLines(content) {
+  return content.split('\n').map(x => x.trim()).filter(x => x);
+}
+
 function cpImageToAndroidProject(imageDir, androidResDir) {
   imageDir = resolveHome(imageDir);
   androidResDir = resolveHome(androidResDir);
@@ -344,4 +362,5 @@ module.exports = {
   snakeCaseToCamelCase,
   simpleExecAppleScript,
   osxNotification,
+  parseLines,
 };
