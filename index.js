@@ -10,6 +10,7 @@ const tinify = require('tinify');
 const prettyBytes = require('pretty-bytes');
 const uuidv4 = require('uuid/v4');
 const { parse: parseHtml } = require('node-html-parser');
+const CliTable = require('cli-table3');
 
 tinify.key = process.env.TINIFY_KEY;
 
@@ -327,6 +328,51 @@ function osxNotification(title, content, subtitle='', sound=false) {
   simpleExecAppleScript(script);
 }
 
+function printArrayViaTable(items, opts = {}) {
+  const limit = opts.limit || 20;
+  let page = opts.page || 1;
+  const orderBy = opts.orderBy || '';
+  const keys = opts.keys || Object.keys(items[0]);
+  let vals = items.map(item => keys.map(key => item[key]));
+  const totalPages = Math.ceil(vals.length / limit);
+  if (page > totalPages) {
+    console.log('No Result');
+    return null;
+  }
+
+  if (orderBy) {
+    if (typeof orderBy === 'string') {
+      const sortOperates = orderBy.split(',');
+      const sortWithOperators = sortOperates.map(operate => {
+        const desc = operate.startsWith('-');
+        const key = operate.replace(/^\+|-/, '')
+        if (desc) {
+          return R.descend(R.prop(key));
+        } else {
+          return R.ascend(R.prop(key));
+        }
+      });
+      vals = R.sortWith(sortWithOperators, vals)
+    } else if (typeof orderBy === 'function') {
+      vals = orderBy(vals)
+    }
+  }
+
+  const displayVals = vals.slice((page - 1) * limit, page * limit);
+
+  const table = new CliTable({
+    head: keys,
+  });
+  table.push(...displayVals);
+  console.log(table.toString());
+  console.log(`Page: ${page}/${totalPages}, Per Page: ${limit}`);
+
+  return () => {
+    page = page + 1;
+    printArrayViaTable(items, {...opts, page});
+  }
+}
+
 
 module.exports = {
   simpleExec,
@@ -363,4 +409,5 @@ module.exports = {
   simpleExecAppleScript,
   osxNotification,
   parseLines,
+  printArrayViaTable,
 };
