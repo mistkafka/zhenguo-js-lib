@@ -332,9 +332,7 @@ function printArrayViaTable(items, opts = {}) {
   const limit = opts.limit || 20;
   let page = opts.page || 1;
   const orderBy = opts.orderBy || '';
-  const keys = opts.keys || Object.keys(items[0]);
-  let vals = items.map(item => keys.map(key => item[key]));
-  const totalPages = Math.ceil(vals.length / limit);
+  const totalPages = Math.ceil(items.length / limit);
   if (page > totalPages) {
     console.log('No Result');
     return null;
@@ -352,13 +350,15 @@ function printArrayViaTable(items, opts = {}) {
           return R.ascend(R.prop(key));
         }
       });
-      vals = R.sortWith(sortWithOperators, vals)
+      items = R.sortWith(sortWithOperators, items)
     } else if (typeof orderBy === 'function') {
-      vals = orderBy(vals)
+      items = orderBy(items)
     }
   }
 
-  const displayVals = vals.slice((page - 1) * limit, page * limit);
+  let displayVals = items.slice((page - 1) * limit, page * limit);
+  const keys = opts.keys || Object.keys(items[0]);
+  displayVals = displayVals.map(item => keys.map(key => item[key]));
 
   const table = new CliTable({
     head: keys,
