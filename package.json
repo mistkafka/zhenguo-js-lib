@@ -1,6 +1,6 @@
 {
     "name": "zhenguo-js-lib",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "personal js lib",
     "main": "index.js",
     "repository": "https://github.com/mistkafka/zhenguo-js-lib",
@@ -23,5 +23,8 @@
         "tinify": "^1.6.0-beta.2",
         "typescript": "^3.8.3",
         "uuid": "^3.3.3"
+    },
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com"
     }
 }
