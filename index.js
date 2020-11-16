@@ -11,6 +11,7 @@ const prettyBytes = require('pretty-bytes');
 const uuidv4 = require('uuid/v4');
 const { parse: parseHtml } = require('node-html-parser');
 const CliTable = require('cli-table3');
+const axios = require('axios');
 
 tinify.key = process.env.TINIFY_KEY;
 
@@ -373,6 +374,13 @@ function printArrayViaTable(items, opts = {}) {
   }
 }
 
+function jsonRequest(url, params) {
+  return axios.request(url, {
+    method: 'GET',
+    params,
+  })
+}
+
 
 module.exports = {
   simpleExec,
@@ -410,4 +418,5 @@ module.exports = {
   osxNotification,
   parseLines,
   printArrayViaTable,
+  jsonRequest,
 };
