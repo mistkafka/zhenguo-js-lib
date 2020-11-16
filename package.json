@@ -1,6 +1,6 @@
 {
-    "name": "zhenguo-js-lib",
-    "version": "1.0.1",
+    "name": "@mistkafka/zhenguo-js-lib",
+    "version": "1.0.2",
     "description": "personal js lib",
     "main": "index.js",
     "repository": "https://github.com/mistkafka/zhenguo-js-lib",
