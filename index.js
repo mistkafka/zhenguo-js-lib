@@ -204,7 +204,11 @@ function tinifyImagesInDirP(dir, muteConsole=false) {
   const pngs = files.filter(x => x.endsWith('.png') || x.endsWith('.jpg'));
   const promises = pngs.map(imageName => {
     const filePath = path.join(dir, imageName);
-    return tinifyFileP(filePath, filePath, muteConsole);
+    return tinifyFileP(filePath, filePath, muteConsole).cache(err => {
+      console.log(`tinfy image "${filePath}" failed.`);
+      console.log(err);
+      return null;
+    })
   });
 
   return Promise.all(promises);
@@ -374,11 +378,8 @@ function printArrayViaTable(items, opts = {}) {
   }
 }
 
-function jsonRequest(url, params) {
-  return axios.request(url, {
-    method: 'GET',
-    params,
-  })
+function jsonRequest(url, config) {
+  return axios.request(url, config)
 }
 
 
