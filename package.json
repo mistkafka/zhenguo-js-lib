@@ -10,7 +10,7 @@
         "@types/node": "^13.13.2",
         "@types/shelljs": "^0.8.7",
         "@types/uuid": "^7.0.3",
-        "axios": "^0.21.0",
+        "axios": "^0.21.1",
         "cli-table3": "^0.6.0",
         "csv-parse": "^4.6.3",
         "iohook": "^0.6.6",
