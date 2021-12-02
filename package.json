@@ -1,6 +1,6 @@
 {
     "name": "@mistkafka/zhenguo-js-lib",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "description": "personal js lib",
     "main": "index.js",
     "repository": "https://github.com/mistkafka/zhenguo-js-lib",
@@ -13,7 +13,6 @@
         "axios": "^0.21.1",
         "cli-table3": "^0.6.0",
         "csv-parse": "^4.6.3",
-        "iohook": "^0.6.6",
         "json2xls": "^0.1.2",
         "moment": "^2.24.0",
         "node-html-parser": "^1.2.7",
