@@ -204,7 +204,7 @@ function tinifyImagesInDirP(dir, muteConsole=false) {
   const pngs = files.filter(x => x.endsWith('.png') || x.endsWith('.jpg'));
   const promises = pngs.map(imageName => {
     const filePath = path.join(dir, imageName);
-    return tinifyFileP(filePath, filePath, muteConsole).cache(err => {
+    return tinifyFileP(filePath, filePath, muteConsole).catch(err => {
       console.log(`tinfy image "${filePath}" failed.`);
       console.log(err);
       return null;
